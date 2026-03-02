@@ -2,58 +2,26 @@
 
 set -ouex pipefail
 
-### Install packages
+### 1. Install Packages
+# Note: Many 'DX' packages (git, gcc, virt-manager, distrobox) are already in your base image.
+# We are adding Docker, your CLI tools, and specific system utilities.
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/43/x86_64/repoview/index.html&protocol=https&redirect=1
-
-# this installs a package from fedora repos
 dnf5 install -y \
+    docker \
+    docker-compose-plugin \
     tmux \
     antigravity \
-    dnf-plugins-core \
-    zsh \
-    gcc \
-    gcc-c++ \
-    gcc-gfortran \
-    make \
     fastfetch \
     htop \
     duf \
-    cmake \
-    git \
-    fuse \
     fprintd \
     fprintd-pam \
     tcl8-devel \
     tk8-devel \
     python-pyqt6 \
     python-pyqt6-webengine \
-    edk2-ovmf \
-    libvirt \
-    libvirt-nss \
     onedrive \
-    PackageKit \
-    docker \
-    distrobox \
-    podman-compose \
-    podman-machine \
-    qemu-char-spice \
-    qemu-device-display-virtio-gpu \
-    qemu-device-display-virtio-vga \
-    qemu-device-usb-redirect \
-    qemu-img \
-    qemu-system-x86-core \
-    qemu-user-binfmt \
-    qemu-user-static \
-    qemu \
-    virt-manager \
     tailscale \
-    ublue-os-libvirt-workarounds \
-    ublue-os-update-services \
-    ublue-os-signing \
     ublue-os-luks \
     ublue-os-just \
     ublue-bling \
@@ -64,13 +32,17 @@ dnf5 install -y \
     flatpak-builder \
     flatpak-spawn
 
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
+### 2. Cleanup
+# Removes metadata to keep the final image layer size down
+dnf5 clean all
 
-#### Example for enabling a System Unit File
+### 3. Service Management
+# Disable Podman's default socket to prevent conflicts
+systemctl disable podman.socket
 
-systemctl enable podman.socket
+# Enable Docker daemon and socket
+systemctl enable docker.socket
+systemctl enable docker.service
+
+# Enable other installed services
+systemctl enable tailscaled.service
