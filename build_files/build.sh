@@ -9,8 +9,11 @@ dnf5 remove -y moby-engine docker-cli containerd runc
 # Note: Many 'DX' packages (git, gcc, virt-manager, distrobox) are already in your base image.
 # We are adding Docker, your CLI tools, and specific system utilities.
 
+# 2. Now install Docker CE and your other packages
 dnf5 install -y \
-    docker \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
     docker-compose-plugin \
     tmux \
     antigravity \
