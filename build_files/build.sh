@@ -1,22 +1,20 @@
 #!/bin/bash
-
 set -ouex pipefail
 
-### 1. Remove the pre-installed conflicting Moby/Docker packages
+# 1. Add official Docker repository
+dnf5 config-manager --add-repo https://download.docker.com
+
+# 2. Remove conflicting pre-installed container packages
 dnf5 remove -y moby-engine docker-cli containerd runc
 
-### 2. Install Packages
-# Note: Many 'DX' packages (git, gcc, virt-manager, distrobox) are already in your base image.
-# We are adding Docker, your CLI tools, and specific system utilities.
-
-# 2. Now install Docker CE and your other packages
+# 3. Install only what is MISSING from Bazzite-DX
+# (Removed ublue-bling, ublue-brew, and ublue-os-flatpak as they are deprecated)
 dnf5 install -y \
     docker-ce \
     docker-ce-cli \
     containerd.io \
     docker-compose-plugin \
     tmux \
-    antigravity \
     fastfetch \
     htop \
     duf \
@@ -27,28 +25,13 @@ dnf5 install -y \
     python-pyqt6 \
     python-pyqt6-webengine \
     onedrive \
-    tailscale \
-    ublue-os-luks \
-    ublue-os-just \
-    ublue-bling \
-    ublue-brew \
-    ublue-os-flatpak \
-    ublue-os-media-automount-udev \
-    ublue-os-udev-rules \
-    flatpak-builder \
-    flatpak-spawn
+    tailscale
 
-### 2. Cleanup
-# Removes metadata to keep the final image layer size down
+# 4. Cleanup
 dnf5 clean all
 
-### 3. Service Management
-# Disable Podman's default socket to prevent conflicts
+# 5. Service Management
 systemctl disable podman.socket
-
-# Enable Docker daemon and socket
 systemctl enable docker.socket
 systemctl enable docker.service
-
-# Enable other installed services
 systemctl enable tailscaled.service
