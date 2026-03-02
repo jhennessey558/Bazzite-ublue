@@ -1,23 +1,20 @@
 #!/bin/bash
 set -ouex pipefail
 
-# 1. Enable Required Repositories
+# 1. Add official Docker repository
 dnf5 config-manager --add-repo https://download.docker.com
-dnf5 copr enable -y ublue-os/packages
-dnf5 copr enable -y ublue-os/staging
 
-# 2. Remove Conflicting Packages
-# Must remove moby-engine before installing docker-ce
+# 2. Remove conflicting pre-installed container packages
 dnf5 remove -y moby-engine docker-cli containerd runc
 
-# 3. Install Docker CE and uBlue Utilities
+# 3. Install only what is MISSING from Bazzite-DX
+# (Removed ublue-bling, ublue-brew, and ublue-os-flatpak as they are deprecated)
 dnf5 install -y \
     docker-ce \
     docker-ce-cli \
     containerd.io \
     docker-compose-plugin \
     tmux \
-    antigravity \
     fastfetch \
     htop \
     duf \
@@ -28,22 +25,12 @@ dnf5 install -y \
     python-pyqt6 \
     python-pyqt6-webengine \
     onedrive \
-    tailscale \
-    ublue-os-luks \
-    ublue-os-just \
-    ublue-bling \
-    ublue-brew \
-    ublue-os-flatpak \
-    ublue-os-media-automount-udev \
-    ublue-os-udev-rules \
-    flatpak-builder \
-    flatpak-spawn
+    tailscale
 
-# 4. Cleanup and Service Management
-dnf5 copr disable -y ublue-os/packages
-dnf5 copr disable -y ublue-os/staging
+# 4. Cleanup
 dnf5 clean all
 
+# 5. Service Management
 systemctl disable podman.socket
 systemctl enable docker.socket
 systemctl enable docker.service
