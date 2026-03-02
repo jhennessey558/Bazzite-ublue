@@ -1,15 +1,16 @@
 #!/bin/bash
-
 set -ouex pipefail
 
-### 1. Remove the pre-installed conflicting Moby/Docker packages
+# 1. Enable Required Repositories
+dnf5 config-manager --add-repo https://download.docker.com
+dnf5 copr enable -y ublue-os/packages
+dnf5 copr enable -y ublue-os/staging
+
+# 2. Remove Conflicting Packages
+# Must remove moby-engine before installing docker-ce
 dnf5 remove -y moby-engine docker-cli containerd runc
 
-### 2. Install Packages
-# Note: Many 'DX' packages (git, gcc, virt-manager, distrobox) are already in your base image.
-# We are adding Docker, your CLI tools, and specific system utilities.
-
-# 2. Now install Docker CE and your other packages
+# 3. Install Docker CE and uBlue Utilities
 dnf5 install -y \
     docker-ce \
     docker-ce-cli \
@@ -38,17 +39,12 @@ dnf5 install -y \
     flatpak-builder \
     flatpak-spawn
 
-### 2. Cleanup
-# Removes metadata to keep the final image layer size down
+# 4. Cleanup and Service Management
+dnf5 copr disable -y ublue-os/packages
+dnf5 copr disable -y ublue-os/staging
 dnf5 clean all
 
-### 3. Service Management
-# Disable Podman's default socket to prevent conflicts
 systemctl disable podman.socket
-
-# Enable Docker daemon and socket
 systemctl enable docker.socket
 systemctl enable docker.service
-
-# Enable other installed services
 systemctl enable tailscaled.service
