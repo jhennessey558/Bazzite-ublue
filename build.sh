@@ -2,7 +2,10 @@
 
 set -ouex pipefail
 
-### 1. Install Packages
+### 1. Remove the pre-installed moby-engine and its components first
+dnf5 remove -y moby-engine docker-cli
+
+### 2. Install Packages
 # Note: Many 'DX' packages (git, gcc, virt-manager, distrobox) are already in your base image.
 # We are adding Docker, your CLI tools, and specific system utilities.
 
