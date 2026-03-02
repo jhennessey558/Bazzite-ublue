@@ -2,38 +2,29 @@
 
 set -ouex pipefail
 
-### Install packages
+### 1. Remove the pre-installed conflicting Moby/Docker packages
+dnf5 remove -y moby-engine docker-cli containerd runc
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/43/x86_64/repoview/index.html&protocol=https&redirect=1
+### 2. Install Packages
+# Note: Many 'DX' packages (git, gcc, virt-manager, distrobox) are already in your base image.
+# We are adding Docker, your CLI tools, and specific system utilities.
 
-# this installs a package from fedora repos
 dnf5 install -y \
+    docker \
+    docker-compose-plugin \
     tmux \
     antigravity \
-    dnf-plugins-core \
-    zsh \
-    git \
-    make \
     fastfetch \
     htop \
     duf \
-    cmake \
-    fuse \
     fprintd \
     fprintd-pam \
     tcl8-devel \
     tk8-devel \
-    docker \
-    distrobox \
-    podman-compose \
-    podman-machine \
+    python-pyqt6 \
+    python-pyqt6-webengine \
+    onedrive \
     tailscale \
-    ublue-os-libvirt-workarounds \
-    ublue-os-update-services \
-    ublue-os-signing \
     ublue-os-luks \
     ublue-os-just \
     ublue-bling \
@@ -44,125 +35,17 @@ dnf5 install -y \
     flatpak-builder \
     flatpak-spawn
 
-### C/C++ Development Tools
-dnf5 install -y \
-    gcc \
-    gcc-c++ \
-    gcc-gfortran \
-    clang \
-    clang-tools-extra \
-    llvm-devel
+### 2. Cleanup
+# Removes metadata to keep the final image layer size down
+dnf5 clean all
 
-### Rust Development
-dnf5 install -y \
-    rust \
-    cargo \
-    rustfmt \
-    clippy
+### 3. Service Management
+# Disable Podman's default socket to prevent conflicts
+systemctl disable podman.socket
 
-### Python Development
-dnf5 install -y \
-    python3 \
-    python3-devel \
-    python3-pip \
-    python-pyqt6 \
-    python-pyqt6-webengine \
-    python3-virtualenv \
-    pipenv \
-    poetry
+# Enable Docker daemon and socket
+systemctl enable docker.socket
+systemctl enable docker.service
 
-### Node.js & JavaScript/TypeScript Development
-dnf5 install -y \
-    nodejs \
-    npm \
-    yarn
-
-### Go Development
-dnf5 install -y \
-    golang
-
-### Java Development
-dnf5 install -y \
-    java-latest-openjdk \
-    java-latest-openjdk-devel \
-    maven
-
-### Security Tools
-dnf5 install -y \
-    openssl \
-    openssh-clients \
-    openssh-server \
-    git-crypt \
-    gnupg \
-    pass \
-    fail2ban \
-    aide \
-    nmap \
-    wireshark \
-    hashcat \
-    john \
-    sqlmap \
-    tripwire \
-    auditd \
-    lynis \
-    rkhunter
-
-### Development Utilities
-dnf5 install -y \
-    git-lfs \
-    gh \
-    direnv \
-    fzf \
-    ripgrep \
-    bat \
-    exa \
-    neovim \
-    vim \
-    tmux \
-    screen \
-    htop \
-    iotop \
-    perf \
-    valgrind \
-    gdb \
-    strace \
-    ltrace
-
-### Container & Virtualization
-dnf5 install -y \
-    edk2-ovmf \
-    libvirt \
-    libvirt-nss \
-    qemu-char-spice \
-    qemu-device-display-virtio-gpu \
-    qemu-device-display-virtio-vga \
-    qemu-device-usb-redirect \
-    qemu-img \
-    qemu-system-x86-core \
-    qemu-user-binfmt \
-    qemu-user-static \
-    qemu \
-    virt-manager \
-    PackageKit
-
-### Install TypeScript globally via npm
-npm install -g typescript ts-node
-
-### Install SvelteKit via npm
-npm install -g create-svelte
-
-### Install Fastly CLI via npm
-npm install -g @fastly/cli
-
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
-
-#### Example for enabling a System Unit File
-
-systemctl enable podman.socket
-systemctl enable libvirtd
-systemctl enable auditd
+# Enable other installed services
+systemctl enable tailscaled.service
