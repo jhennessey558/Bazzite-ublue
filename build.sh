@@ -1,14 +1,13 @@
 #!/bin/bash
 set -ouex pipefail
 
-# 1. Add official Docker repository
-dnf5 config-manager --add-repo https://download.docker.com
+# 1. Add official Docker repository using the correct DNF5 syntax
+dnf5 config-manager addrepo --from-repofile=https://download.docker.com
 
-# 2. Remove conflicting pre-installed container packages
+# 2. Remove conflicting pre-installed packages
 dnf5 remove -y moby-engine docker-cli containerd runc
 
-# 3. Install only what is MISSING from Bazzite-DX
-# (Removed ublue-bling, ublue-brew, and ublue-os-flatpak as they are deprecated)
+# 3. Install Docker CE and other utilities
 dnf5 install -y \
     docker-ce \
     docker-ce-cli \
@@ -35,3 +34,4 @@ systemctl disable podman.socket
 systemctl enable docker.socket
 systemctl enable docker.service
 systemctl enable tailscaled.service
+
