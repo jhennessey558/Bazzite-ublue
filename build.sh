@@ -1,13 +1,13 @@
 #!/bin/bash
 set -ouex pipefail
 
-# 1. Add official Docker repository using the correct DNF5 syntax
+# 1. Add official Docker repository using the CORRECT DNF5 syntax
 dnf5 config-manager addrepo --from-repofile=https://download.docker.com
 
-# 2. Remove conflicting pre-installed packages
+# 2. Remove conflicting pre-installed packages (Moby)
 dnf5 remove -y moby-engine docker-cli containerd runc
 
-# 3. Install Docker CE and other utilities
+# 3. Install Docker CE and other missing utilities
 dnf5 install -y \
     docker-ce \
     docker-ce-cli \
