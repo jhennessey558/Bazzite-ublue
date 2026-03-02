@@ -10,7 +10,6 @@ dnf5 remove -y moby-engine docker-cli containerd runc
 # We are adding Docker, your CLI tools, and specific system utilities.
 
 # 2. Now install Docker CE and your other packages
-# 2. Now install Docker CE and your other packages
 dnf5 install -y \
     docker-ce \
     docker-ce-cli \
